@@ -4,6 +4,8 @@ from django.contrib.auth import login, logout
 from . models import Employee, Role, Department
 from datetime import datetime
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
 
 # Create your views here.
 def registrationview(request):
@@ -32,13 +34,16 @@ def loginview(request):
         form = AuthenticationForm(initial = initial_data)
     return render(request, 'auth/login.html', {'form':form})
 
+@login_required
 def dashboardview(request):
     return render(request,'layouts/dashboard.html')
 
+@login_required
 def logoutview(request):
     logout(request)
     return redirect('login')
 
+@login_required
 def viewallemployees(request):
     emps = Employee.objects.all()
     context = {
@@ -47,11 +52,12 @@ def viewallemployees(request):
     print(context)
     return render(request, 'CRUD/viewallemp.html', context)
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from .models import Employee, Department, Role
-from datetime import datetime
+# from django.shortcuts import render
+# from django.http import HttpResponse
+# from .models import Employee, Department, Role
+# from datetime import datetime
 
+@login_required
 def addemp(request):
     if request.method == 'POST':
         first_name = request.POST['first_name']
@@ -78,7 +84,8 @@ def addemp(request):
                 hire_date=datetime.now()
             )
             new_emp.save()
-            return HttpResponse('Employee added successfully')
+            # return HttpResponse('Employee added successfully')
+            return redirect('viewallemployees')
         except Department.DoesNotExist:
             return HttpResponse('Department does not exist')
         except Role.DoesNotExist:
@@ -94,6 +101,7 @@ def addemp(request):
     else:
         return HttpResponse('An Exception occurred! Employee has not been added')
 
+@login_required
 def filteremployee(request):
     if request.method == "POST":
         name = request.POST['name']
@@ -118,13 +126,13 @@ def filteremployee(request):
     else:
         return HttpResponse("No Such Data Available!")
 
-
+@login_required
 def deleteemployee(request, emp_id=0):
     if emp_id:
         try:
             emp_to_be_removed = Employee.objects.get(id=emp_id)
             emp_to_be_removed.delete()  # Add parentheses to call the delete method
-            return HttpResponse("Employee Removed Successfully")
+            return redirect('viewallemployees')
         except Employee.DoesNotExist:
             return HttpResponse("Please Enter A Valid EMP ID")
     else:
@@ -134,4 +142,25 @@ def deleteemployee(request, emp_id=0):
         }
         return render(request, 'CRUD/deleteemp.html', context)
 
-
+@login_required
+def updateemp(request, emp_id):
+    emp = get_object_or_404(Employee, id=emp_id)
+    if request.method == 'POST':
+        emp.first_name = request.POST['first_name']
+        emp.last_name = request.POST['last_name']
+        emp.salary = request.POST['salary']
+        emp.bonus = request.POST['bonus']
+        emp.phone = request.POST['phone']
+        emp.dept_id = request.POST['dept']
+        emp.role_id = request.POST['role']
+        emp.save()
+        return redirect('viewallemployees')
+    else:
+        departments = Department.objects.all()
+        roles = Role.objects.all()
+        context = {
+            'emp': emp,
+            'departments': departments,
+            'roles': roles
+        }
+        return render(request, 'CRUD/updateemp.html', context)
