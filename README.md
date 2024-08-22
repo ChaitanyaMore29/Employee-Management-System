@@ -41,3 +41,4 @@ employee_management/: Main application directory.
 templates/: Contains HTML templates for the frontend.
 static/: Includes static files like CSS and JavaScript.
 manage.py: Command-line utility for administrative tasks.
+hello world 
