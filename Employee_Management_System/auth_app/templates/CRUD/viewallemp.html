@@ -34,7 +34,7 @@
         <td>{{ emp.hire_date }}</td>
         <td>
           <a href="{% url 'updateemp' emp.id %}" class="btn btn-sm btn-primary">Update</a>
-          <a href="{% url 'deleteemployee' emp.id %}" class="btn btn-sm btn-danger">Delete</a>
+          <a href="{% url 'deleteemployee' emp.id %}" class="btn btn-sm btn-danger">Remove</a>
         </td>
       </tr>
         {% endfor %}
